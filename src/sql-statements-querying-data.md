@@ -93,7 +93,7 @@ FROM species;
 
 This will return only the `genus` and `species` column, and all the rows from the `species` table.
 
-We can explicitly reference the table we to pull the columns from. This isn't required in the example above since we are only pulling data from a single table. If we are going to join tables from multiple tables it is best to use a reference to each table the column is coming from. For example, the query above can be written as:
+We can explicitly reference the table we to pull the columns from. This isn't required in the example above since we are only pulling data from a single table. If we are going to join multiple tables it is best to use a reference to each table each column belongs to. This avoids ambiguity. For example, the query above can be written as:
 
 ```sql
 SELECT
@@ -196,7 +196,32 @@ WHERE (species.taxa = 'Rodent' OR species.taxa = 'Bird')
 
 Again, remember that SQL statements read like a sentence, "Select genus, species, taxa from species where taxa is equal to Rodent or taxa is equal to Bird and species is equal to sp.". The result is all the rows of the species table have the taxa Rodent or Bird, and a species of sp.
 
-Instead of using `OR` we can use `IN` since the `WHERE` condition for Rodent and Bird refer to the same column. This isn't always the case for more complex queries, but it works here. As an added benefit, it makes the SQL statement easier to read:
+The `WHERE` statement is evaluated left to right. Parantheses are used to combine the different parts of the `WHERE` statement into logical groups. If we modify the query above without parantheses the result is different.
+
+```sql
+SELECT
+	species.genus,
+	species.species,
+	species.taxa
+FROM species
+WHERE species.taxa = 'Rodent' OR species.taxa = 'Bird'
+	AND species.species = 'sp.';
+
+/* result:
+      genus       |   species    |  taxa
+------------------+--------------+--------
+ Ammospermophilus | harrisi      | Rodent
+ Baiomys          | taylori      | Rodent
+ Dipodomys        | merriami     | Rodent
+ Dipodomys        | ordii        | Rodent
+ Dipodomys        | spectabilis  | Rodent
+ ...              | ...          | ...
+(33 rows)
+```
+
+This query returns all the row where `taxa = 'Rodent'` and all the rows where `taxa = 'Bird' AND 'species = 'sp.'`. Notice that every rodent species is returned but only the two bird species.
+
+Instead of using `OR` we can use `IN` since the `WHERE` condition for Rodent and Bird refer to the same column. This isn't always the case for more complex queries, but it works here. As an added benefit, it makes the SQL statement easier to read (*note: `IN` will work with a single value as well. `taxa IN ('Rodent')` is a valid statement.*):
 
 ```sql
 SELECT
